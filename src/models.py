@@ -2,41 +2,61 @@ import math
 import numpy as np
 
 
+# System class
 class System:
     def __init__(self, charges=[]):
-        self.particles = charges
+        # Particles in system
+        self._particles = charges
 
     def add_particles(self, particle):
+        # Check if particle is an instance of Particle class
         assert isinstance(particle, Particle)
 
-        self.particles.append(Particle)
+        # Add particle
+        self._particles.append(Particle)
 
+    # Return all particles
     def get_particles(self):
-        return self.particles
+        return self._particles
 
+    # Return distance between two coordinates, a and b
     def distance(self, a, b):
         return math.sqrt(sum([(x1 - x2)**2 for x1, x2 in zip(a, b)]))
 
+    # Return field at a position given the k
     def get_field(self, x, y, k=9e9):
-        force = [0, 0]
-        for particle in self.particles:
+        # Field vector
+        field_v = [0, 0]
+
+        # Find net field at a position
+        for particle in self._particles:
+            # Get the position of the particle
             particle_pos = (particle.x, particle.y)
 
+            # Get distance to particle
             dist = self.distance((x, y), (particle.x, particle.y))
 
+            # Get field magnitude
             try:
                 mag = k * particle.charge / (dist ** 2)
             except ZeroDivisionError:
+                # Return false if the particle and the coordinates are in the same position
                 return False
 
-            force[0] += (mag/dist) * (particle.x - x)
-            force[1] += (mag/dist) * (particle.y - y)
+            # Calculate components of field vector
+            field_v[0] += (mag/dist) * (particle.x - x)
+            field_v[1] += (mag/dist) * (particle.y - y)
 
-        return force
+        # Return the field vector
+        return field_v
 
 
+# Particle class
 class Particle:
     def __init__(self, x, y, charge=1):
+        # Charge of particle
         self.charge = charge
+
+        # Coordinates of particle
         self.x = x
         self.y = y
