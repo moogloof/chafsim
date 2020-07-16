@@ -23,6 +23,7 @@ class Window(Tk):
         self.direction_only = IntVar()
         self.field_displayed = IntVar()
         self.scale_displayed = IntVar()
+        self.grid_displayed = IntVar()
 
         # Load default particles
         p1 = models.Particle(100, 300, 1e-9)
@@ -32,13 +33,14 @@ class Window(Tk):
         # Instantiate widgets
         self.canvas = Canvas(self, width=self.config_width, height=self.config_height, bg="black", bd=0, highlightthickness=0)
         self.info_frame = InfoFrame(self.system,
-            (self.direction_only, self.field_displayed, self.scale_displayed),
+            (self.direction_only, self.field_displayed, self.scale_displayed, self.grid_displayed),
             self, bd=0, highlightthickness=0)
 
         # Default check settings
         self.direction_only.set(0)
         self.field_displayed.set(1)
         self.scale_displayed.set(0)
+        self.grid_displayed.set(0)
 
         # Display system fields
         self.display_field(self.system)
@@ -103,6 +105,17 @@ class Window(Tk):
         self.canvas.delete("field")
         if self.field_displayed.get():
             self.display_field(self.system)
+
+        # Display grid
+        if self.grid_displayed.get():
+            grid_sep = 25
+            for column in range(self.config_width // grid_sep):
+                self.canvas.create_line(column * grid_sep, 0, column * grid_sep, self.config_height, fill="#9e9e9e", tags="gridline")
+
+            for row in range(self.config_height // grid_sep):
+                self.canvas.create_line(0, row * grid_sep, self.config_width, row * grid_sep, fill="#9e9e9e", tags="gridline")
+        else:
+            self.canvas.delete("gridline")
 
         # Raise particles
         self.canvas.tag_raise("particle")
@@ -187,6 +200,7 @@ class InfoFrame(Frame):
         self.direction_check = Checkbutton(self, text="Direction Only", variable=intvars[0])
         self.field_check = Checkbutton(self, text="Display Field", variable=intvars[1])
         self.scale_check = Checkbutton(self, text="Display Scale", variable=intvars[2])
+        self.grid_check = Checkbutton(self, text="Display Grid", variable=intvars[3])
 
         # Pack widgets into frame grid
         self.x_label.grid(row=0, column=0)
@@ -195,6 +209,7 @@ class InfoFrame(Frame):
         self.direction_check.grid(row=2, column=0, columnspan=2)
         self.field_check.grid(row=3, column=0, columnspan=2)
         self.scale_check.grid(row=4, column=0, columnspan=2)
+        self.grid_check.grid(row=5, column=0, columnspan=2)
 
         # Instantiate field to read
         self.field = field
