@@ -13,18 +13,39 @@ class Window(Tk):
         self.title("Charges and Fields")
         self.resizable(0, 0)
 
+        # Set window display settings
+        # Radius of particle
+        self.particle_rad = 10
+        # Config sizing
+        self.config_width = 800
+        self.config_height = 600
+
         # Load default particles
         p1 = models.Particle(100, 300)
         p2 = models.Particle(700, 300, -1)
-        system = models.System([p1, p2])
+        self.system = models.System([p1, p2])
 
         # Instantiate widgets
-        self.canvas = Canvas(self, width=800, height=600, bg="black", bd=0, highlightthickness=0)
-        self.info_frame = InfoFrame(system, self, bd=0, highlightthickness=0)
+        self.canvas = Canvas(self, width=self.config_width, height=self.config_height, bg="black", bd=0, highlightthickness=0)
+        self.info_frame = InfoFrame(self.system, self, bd=0, highlightthickness=0)
+
+        # Display system fields
+        self.display_field(self.system)
+
+        # Initial display of particles
+        self.display_particles(self.system)
+
+        # Selected particle
+        self.selected_particle = None
 
         # Set widget bindings
         # Binded canvas mouse motion to information update
         self.canvas.bind("<Motion>", self.info_frame.update)
+        # Binded particles to click and movement update
+        for particle in self.system.get_particles():
+            self.canvas.tag_bind(particle.id, "<Button-1>", self.select_particle)
+        # Unselect movement select particle
+        self.canvas.bind("<ButtonRelease-1>", self.unselect_particle)
 
         # Pack widgets into window grid
         self.canvas.grid(row=0, column=0)
@@ -33,22 +54,58 @@ class Window(Tk):
         # Update window
         self.update()
 
-        # Display system
-        self.display(system)
+        # Run loop
+        self.after(0, self.loop)
 
         # Run window mainloop
         self.mainloop()
 
-    def display(self, system):
+    def select_particle(self, event):
+        # Select particle that is clicked
+        particle = self.canvas.find_withtag(CURRENT)[0]
+        self.selected_particle = particle
+
+    def unselect_particle(self, event):
+        # Unselect particle if is selected
+        if self.selected_particle is not None:
+            self.selected_particle = None
+
+    def loop(self):
+        # Move selected particle
+        if self.selected_particle is not None:
+            # Get selected particle coords
+            selected_particle_coords = self.canvas.coords(self.selected_particle)
+
+            # Get relative mouse position
+            mousex = self.winfo_pointerx() - self.winfo_rootx() - self.particle_rad
+            mousey = self.winfo_pointery() - self.winfo_rooty() - self.particle_rad
+
+            # Move particle to mouse
+            self.canvas.move(self.selected_particle, mousex - selected_particle_coords[0], mousey - selected_particle_coords[1])
+
+        # Update particle coords
+        for particle in self.system.get_particles():
+            particle.x = self.canvas.coords(particle.id)[0] + self.particle_rad
+            particle.y = self.canvas.coords(particle.id)[1] + self.particle_rad
+
+        # Update field
+        self.canvas.delete("field")
+        self.display_field(self.system)
+
+        # Raise particles
+        self.canvas.tag_raise("particle")
+
+        # Repeat loop
+        self.after(10, self.loop)
+
+    def display_field(self, system):
         # Display the system
         # Separation factor for field arrows
         arrow_sep = 50
-        # Radius of particle
-        particle_rad = 10
 
         # Display field arrows
-        for x in range(self.canvas.winfo_width() // arrow_sep):
-            for y in range(self.canvas.winfo_height() // arrow_sep):
+        for x in range(self.config_width // arrow_sep):
+            for y in range(self.config_height // arrow_sep):
                 # Get field vector at arrow position
                 f = system.get_field(x * arrow_sep, y * arrow_sep)
 
@@ -61,16 +118,13 @@ class Window(Tk):
                 f[0] /= resize_factor
                 f[1] /= resize_factor
 
-                # Display arrow position
-                self.canvas.create_oval(x * arrow_sep - 2, y * arrow_sep - 2,
-                    x * arrow_sep + 2, y * arrow_sep + 2,
-                    outline="white", fill="white")
-
                 # Display arrow vector
-                self.canvas.create_line(x * arrow_sep, y * arrow_sep,
+                arrow = self.canvas.create_line(x * arrow_sep, y * arrow_sep,
                     x * arrow_sep + f[0], y * arrow_sep + f[1],
-                    fill="white")
+                    fill="white", arrow=LAST)
+                self.canvas.addtag_withtag("field", arrow)
 
+    def display_particles(self, system):
         # Display particles
         for particle in system.get_particles():
             # Indicate sign of charge with color
@@ -80,9 +134,10 @@ class Window(Tk):
                 color = "blue"
 
             # Display particle
-            self.canvas.create_oval(particle.x - particle_rad, particle.y - particle_rad,
-                particle.x + particle_rad, particle.y + particle_rad,
+            p = particle.id = self.canvas.create_oval(particle.x - self.particle_rad, particle.y - self.particle_rad,
+                particle.x + self.particle_rad, particle.y + self.particle_rad,
                 outline=color, fill=color)
+            self.canvas.addtag_withtag("particle", p)
 
 
 # InfoFrame class

@@ -60,3 +60,6 @@ class Particle:
         # Coordinates of particle
         self.x = x
         self.y = y
+
+        # Particle id
+        self.id = None
