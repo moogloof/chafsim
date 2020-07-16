@@ -9,12 +9,12 @@ class System:
         self._particles = charges
         self.conversion = conversion
 
-    def add_particles(self, particle):
+    def add_particle(self, particle):
         # Check if particle is an instance of Particle class
         assert isinstance(particle, Particle)
 
         # Add particle
-        self._particles.append(Particle)
+        self._particles.append(particle)
 
     # Return all particles
     def get_particles(self):

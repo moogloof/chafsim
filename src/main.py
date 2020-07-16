@@ -34,6 +34,7 @@ class Window(Tk):
         self.canvas = Canvas(self, width=self.config_width, height=self.config_height, bg="black", bd=0, highlightthickness=0)
         self.info_frame = InfoFrame(self.system,
             (self.direction_only, self.field_displayed, self.scale_displayed, self.grid_displayed),
+            (self.add_pos_particle, self.add_neg_particle),
             self, bd=0, highlightthickness=0)
 
         # Default check settings
@@ -55,8 +56,7 @@ class Window(Tk):
         # Binded canvas mouse motion to information update
         self.canvas.bind("<Motion>", self.info_frame.update)
         # Binded particles to click and movement update
-        for particle in self.system.get_particles():
-            self.canvas.tag_bind(particle.id, "<Button-1>", self.select_particle)
+        self.particle_bind()
         # Unselect movement select particle
         self.canvas.bind("<ButtonRelease-1>", self.unselect_particle)
 
@@ -72,6 +72,26 @@ class Window(Tk):
 
         # Run window mainloop
         self.mainloop()
+
+    def particle_bind(self):
+        # Binded particles to click and movement update
+        for particle in self.system.get_particles():
+            self.canvas.tag_bind(particle.id, "<Button-1>", self.select_particle)
+
+    def refresh_particles(self):
+        self.canvas.delete("particle")
+        self.display_particles(self.system)
+        self.particle_bind()
+
+    def add_pos_particle(self):
+        p = models.Particle(300, 300, 1e-9)
+        self.system.add_particle(p)
+        self.refresh_particles()
+
+    def add_neg_particle(self):
+        p = models.Particle(300, 300, -1e-9)
+        self.system.add_particle(p)
+        self.refresh_particles()
 
     def select_particle(self, event):
         # Select particle that is clicked
@@ -180,7 +200,7 @@ class Window(Tk):
 
 # InfoFrame class
 class InfoFrame(Frame):
-    def __init__(self, field, intvars, *args, **kwargs):
+    def __init__(self, field, intvars, cmds, *args, **kwargs):
         # Initialize the frame
         super().__init__(*args, **kwargs)
 
@@ -202,6 +222,11 @@ class InfoFrame(Frame):
         self.scale_check = Checkbutton(self, text="Display Scale", variable=intvars[2])
         self.grid_check = Checkbutton(self, text="Display Grid", variable=intvars[3])
 
+        # Instantiate buttons
+        # Pair event handlers with buttons
+        self.create_pro = Button(self, text="Create Proton", command=cmds[0])
+        self.create_ele = Button(self, text="Create Electron", command=cmds[1])
+
         # Pack widgets into frame grid
         self.x_label.grid(row=0, column=0)
         self.y_label.grid(row=0, column=1)
@@ -210,6 +235,8 @@ class InfoFrame(Frame):
         self.field_check.grid(row=3, column=0, columnspan=2)
         self.scale_check.grid(row=4, column=0, columnspan=2)
         self.grid_check.grid(row=5, column=0, columnspan=2)
+        self.create_pro.grid(row=6, column=0, columnspan=2)
+        self.create_ele.grid(row=7, column=0, columnspan=2)
 
         # Instantiate field to read
         self.field = field
