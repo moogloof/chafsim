@@ -34,7 +34,7 @@ class Window(Tk):
         self.canvas = Canvas(self, width=self.config_width, height=self.config_height, bg="black", bd=0, highlightthickness=0)
         self.info_frame = InfoFrame(self.system,
             (self.direction_only, self.field_displayed, self.scale_displayed, self.grid_displayed),
-            (self.add_pos_particle, self.add_neg_particle),
+            (self.add_pos_particle, self.add_neg_particle, self.delete_mode),
             self, bd=0, highlightthickness=0)
 
         # Default check settings
@@ -51,6 +51,9 @@ class Window(Tk):
 
         # Selected particle
         self.selected_particle = None
+
+        # Cursor modes
+        self.click_mode = None
 
         # Set widget bindings
         # Binded canvas mouse motion to information update
@@ -73,6 +76,9 @@ class Window(Tk):
         # Run window mainloop
         self.mainloop()
 
+    def delete_mode(self):
+        self.click_mode = "delete"
+
     def particle_bind(self):
         # Binded particles to click and movement update
         for particle in self.system.get_particles():
@@ -94,9 +100,15 @@ class Window(Tk):
         self.refresh_particles()
 
     def select_particle(self, event):
-        # Select particle that is clicked
         particle = self.canvas.find_withtag(CURRENT)[0]
-        self.selected_particle = particle
+
+        if self.click_mode is None:
+            # Select particle that is clicked
+            self.selected_particle = particle
+        elif self.click_mode == "delete":
+            self.system.remove_particle(particle)
+            self.refresh_particles()
+            self.click_mode = None
 
     def unselect_particle(self, event):
         # Unselect particle if is selected
@@ -228,6 +240,7 @@ class InfoFrame(Frame):
         # Pair event handlers with buttons
         self.create_pro = Button(self, text="Add - Charge", command=cmds[0])
         self.create_ele = Button(self, text="Add + Charge", command=cmds[1])
+        self.delete_par = Button(self, text="Delete Particle", command=cmds[2])
 
         # Pack widgets into frame grid
         self.x_label.grid(row=0, column=0)
@@ -240,6 +253,7 @@ class InfoFrame(Frame):
         self.grid_check.grid(row=6, column=0, columnspan=2)
         self.create_pro.grid(row=7, column=0, columnspan=2)
         self.create_ele.grid(row=8, column=0, columnspan=2)
+        self.delete_par.grid(row=9, column=0, columnspan=2)
 
         # Instantiate field to read
         self.field = field

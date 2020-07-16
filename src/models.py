@@ -16,6 +16,11 @@ class System:
         # Add particle
         self._particles.append(particle)
 
+    def remove_particle(self, id):
+        for particle in self._particles:
+            if particle.id == id:
+                self._particles.remove(particle)
+
     # Return all particles
     def get_particles(self):
         return self._particles
