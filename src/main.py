@@ -186,7 +186,7 @@ class Window(Tk):
         # Display particles
         for particle in system.get_particles():
             # Indicate sign of charge with color
-            if particle.charge > 0:
+            if particle.charge < 0:
                 color = "red"
             else:
                 color = "blue"
@@ -208,12 +208,14 @@ class InfoFrame(Frame):
         self.x_label_var = StringVar()
         self.y_label_var = StringVar()
         self.field_label_var = StringVar()
+        self.voltage_label_var = StringVar()
 
         # Instantiate labels
         # Pair textvariables to StringVars
         self.x_label = Label(self, textvariable=self.x_label_var, width=15)
         self.y_label = Label(self, textvariable=self.y_label_var, width=15)
         self.field_label = Label(self, textvariable=self.field_label_var, width=30)
+        self.voltage_label = Label(self, textvariable=self.voltage_label_var, width=30)
 
         # Instantiate checks
         # Pair checks with intvars
@@ -224,19 +226,20 @@ class InfoFrame(Frame):
 
         # Instantiate buttons
         # Pair event handlers with buttons
-        self.create_pro = Button(self, text="Create Proton", command=cmds[0])
-        self.create_ele = Button(self, text="Create Electron", command=cmds[1])
+        self.create_pro = Button(self, text="Add - Charge", command=cmds[0])
+        self.create_ele = Button(self, text="Add + Charge", command=cmds[1])
 
         # Pack widgets into frame grid
         self.x_label.grid(row=0, column=0)
         self.y_label.grid(row=0, column=1)
         self.field_label.grid(row=1, column=0, columnspan=2)
-        self.direction_check.grid(row=2, column=0, columnspan=2)
-        self.field_check.grid(row=3, column=0, columnspan=2)
-        self.scale_check.grid(row=4, column=0, columnspan=2)
-        self.grid_check.grid(row=5, column=0, columnspan=2)
-        self.create_pro.grid(row=6, column=0, columnspan=2)
-        self.create_ele.grid(row=7, column=0, columnspan=2)
+        self.voltage_label.grid(row=2, column=0, columnspan=2)
+        self.direction_check.grid(row=3, column=0, columnspan=2)
+        self.field_check.grid(row=4, column=0, columnspan=2)
+        self.scale_check.grid(row=5, column=0, columnspan=2)
+        self.grid_check.grid(row=6, column=0, columnspan=2)
+        self.create_pro.grid(row=7, column=0, columnspan=2)
+        self.create_ele.grid(row=8, column=0, columnspan=2)
 
         # Instantiate field to read
         self.field = field
@@ -258,6 +261,13 @@ class InfoFrame(Frame):
 
         # Update field information at mouse
         self.field_label_var.set(f"Field: {f}")
+
+        # Return voltage at mouse position
+        v = self.field.get_voltage(mov.x, mov.y)
+        v = round(v)
+
+        # Update voltage information at mouse
+        self.voltage_label_var.set(f"V: {v}")
 
 
 # Main program

@@ -51,6 +51,33 @@ class System:
         # Return the field vector
         return field_v
 
+    # Return field at a position given the k
+    def get_voltage(self, x, y, k=9e9):
+        # Field vector
+        field_v = [0, 0]
+
+        # Find net field at a position
+        for particle in self._particles:
+            # Get the position of the particle
+            particle_pos = (particle.x, particle.y)
+
+            # Get distance to particle
+            dist = self.distance((x, y), (particle.x, particle.y)) / self.conversion
+
+            # Get field magnitude
+            try:
+                mag = k * particle.charge / (dist)
+            except ZeroDivisionError:
+                # Return false if the particle and the coordinates are in the same position
+                return False
+
+            # Calculate components of field vector
+            field_v[0] += (mag/dist) * (particle.x - x)
+            field_v[1] += (mag/dist) * (particle.y - y)
+
+        # Return the field vector
+        return self.distance((0, 0), field_v)
+
 
 # Particle class
 class Particle:
