@@ -4,9 +4,10 @@ import numpy as np
 
 # System class
 class System:
-    def __init__(self, charges=[]):
+    def __init__(self, charges=[], conversion=100):
         # Particles in system
         self._particles = charges
+        self.conversion = conversion
 
     def add_particles(self, particle):
         # Check if particle is an instance of Particle class
@@ -34,7 +35,7 @@ class System:
             particle_pos = (particle.x, particle.y)
 
             # Get distance to particle
-            dist = self.distance((x, y), (particle.x, particle.y))
+            dist = self.distance((x, y), (particle.x, particle.y)) / self.conversion
 
             # Get field magnitude
             try:

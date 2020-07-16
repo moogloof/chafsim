@@ -22,21 +22,23 @@ class Window(Tk):
         # Config arrow display type
         self.direction_only = IntVar()
         self.field_displayed = IntVar()
+        self.scale_displayed = IntVar()
 
         # Load default particles
-        p1 = models.Particle(100, 300)
-        p2 = models.Particle(700, 300, -1)
-        self.system = models.System([p1, p2])
+        p1 = models.Particle(100, 300, 1e-9)
+        p2 = models.Particle(700, 300, -1e-9)
+        self.system = models.System([p1, p2], 200)
 
         # Instantiate widgets
         self.canvas = Canvas(self, width=self.config_width, height=self.config_height, bg="black", bd=0, highlightthickness=0)
         self.info_frame = InfoFrame(self.system,
-            (self.direction_only, self.field_displayed),
+            (self.direction_only, self.field_displayed, self.scale_displayed),
             self, bd=0, highlightthickness=0)
 
         # Default check settings
         self.direction_only.set(0)
         self.field_displayed.set(1)
+        self.scale_displayed.set(0)
 
         # Display system fields
         self.display_field(self.system)
@@ -105,6 +107,13 @@ class Window(Tk):
         # Raise particles
         self.canvas.tag_raise("particle")
 
+        if self.scale_displayed.get():
+            # Display scale
+            self.canvas.create_rectangle(20, 20, 20 + self.system.conversion, 50, outline="green", fill="green", tags="scale")
+            self.canvas.create_text((40 + self.system.conversion) / 2, 35, text="1 Meter", tags="scale")
+        else:
+            self.canvas.delete("scale")
+
         # Repeat loop
         self.after(10, self.loop)
 
@@ -130,7 +139,7 @@ class Window(Tk):
                     f[1] /= f_dist_factor
                 else:
                     # Resize arrows by a factor
-                    resize_factor = 10000
+                    resize_factor = 1000
                     f[0] /= resize_factor
                     f[1] /= resize_factor
 
@@ -177,6 +186,7 @@ class InfoFrame(Frame):
         # Pair checks with intvars
         self.direction_check = Checkbutton(self, text="Direction Only", variable=intvars[0])
         self.field_check = Checkbutton(self, text="Display Field", variable=intvars[1])
+        self.scale_check = Checkbutton(self, text="Display Scale", variable=intvars[2])
 
         # Pack widgets into frame grid
         self.x_label.grid(row=0, column=0)
@@ -184,6 +194,7 @@ class InfoFrame(Frame):
         self.field_label.grid(row=1, column=0, columnspan=2)
         self.direction_check.grid(row=2, column=0, columnspan=2)
         self.field_check.grid(row=3, column=0, columnspan=2)
+        self.scale_check.grid(row=4, column=0, columnspan=2)
 
         # Instantiate field to read
         self.field = field
