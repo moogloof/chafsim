@@ -19,6 +19,9 @@ class Window(Tk):
         # Config sizing
         self.config_width = 800
         self.config_height = 600
+        # Config arrow display type
+        self.direction_only = IntVar()
+        self.field_displayed = IntVar()
 
         # Load default particles
         p1 = models.Particle(100, 300)
@@ -27,7 +30,13 @@ class Window(Tk):
 
         # Instantiate widgets
         self.canvas = Canvas(self, width=self.config_width, height=self.config_height, bg="black", bd=0, highlightthickness=0)
-        self.info_frame = InfoFrame(self.system, self, bd=0, highlightthickness=0)
+        self.info_frame = InfoFrame(self.system,
+            (self.direction_only, self.field_displayed),
+            self, bd=0, highlightthickness=0)
+
+        # Default check settings
+        self.direction_only.set(0)
+        self.field_displayed.set(1)
 
         # Display system fields
         self.display_field(self.system)
@@ -90,7 +99,8 @@ class Window(Tk):
 
         # Update field
         self.canvas.delete("field")
-        self.display_field(self.system)
+        if self.field_displayed.get():
+            self.display_field(self.system)
 
         # Raise particles
         self.canvas.tag_raise("particle")
@@ -113,10 +123,16 @@ class Window(Tk):
                 if not f:
                     continue
 
-                # Resize arrows by a factor
-                resize_factor = 10000
-                f[0] /= resize_factor
-                f[1] /= resize_factor
+                if self.direction_only.get():
+                    # Disregard magnitude of arrows
+                    f_dist_factor = system.distance((0, 0), f) / 30
+                    f[0] /= f_dist_factor
+                    f[1] /= f_dist_factor
+                else:
+                    # Resize arrows by a factor
+                    resize_factor = 10000
+                    f[0] /= resize_factor
+                    f[1] /= resize_factor
 
                 # Display arrow vector
                 arrow = self.canvas.create_line(x * arrow_sep, y * arrow_sep,
@@ -142,7 +158,7 @@ class Window(Tk):
 
 # InfoFrame class
 class InfoFrame(Frame):
-    def __init__(self, field, *args, **kwargs):
+    def __init__(self, field, intvars, *args, **kwargs):
         # Initialize the frame
         super().__init__(*args, **kwargs)
 
@@ -157,10 +173,17 @@ class InfoFrame(Frame):
         self.y_label = Label(self, textvariable=self.y_label_var, width=15)
         self.field_label = Label(self, textvariable=self.field_label_var, width=30)
 
+        # Instantiate checks
+        # Pair checks with intvars
+        self.direction_check = Checkbutton(self, text="Direction Only", variable=intvars[0])
+        self.field_check = Checkbutton(self, text="Display Field", variable=intvars[1])
+
         # Pack widgets into frame grid
         self.x_label.grid(row=0, column=0)
         self.y_label.grid(row=0, column=1)
         self.field_label.grid(row=1, column=0, columnspan=2)
+        self.direction_check.grid(row=2, column=0, columnspan=2)
+        self.field_check.grid(row=3, column=0, columnspan=2)
 
         # Instantiate field to read
         self.field = field
