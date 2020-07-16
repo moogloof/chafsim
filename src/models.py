@@ -1,4 +1,5 @@
 import math
+import numpy as np
 
 
 class System:
@@ -13,13 +14,25 @@ class System:
     def get_particles(self):
         return self.particles
 
-    def distance(a, b):
+    def distance(self, a, b):
         return math.sqrt(sum([(x1 - x2)**2 for x1, x2 in zip(a, b)]))
 
-    def get_force(self, x, y, k=9e9):
+    def get_field(self, x, y, k=9e9):
         force = [0, 0]
-        # return k * force[1] * 
-        # TODO: Add calculations for electric field
+        for particle in self.particles:
+            particle_pos = (particle.x, particle.y)
+
+            dist = self.distance((x, y), (particle.x, particle.y))
+
+            try:
+                mag = k * particle.charge / (dist ** 2)
+            except ZeroDivisionError:
+                return False
+
+            force[0] += (mag/dist) * (particle.x - x)
+            force[1] += (mag/dist) * (particle.y - y)
+
+        return force
 
 
 class Particle:
