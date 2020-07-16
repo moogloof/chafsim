@@ -34,7 +34,7 @@ class Window(Tk):
         self.canvas = Canvas(self, width=self.config_width, height=self.config_height, bg="black", bd=0, highlightthickness=0)
         self.info_frame = InfoFrame(self.system,
             (self.direction_only, self.field_displayed, self.scale_displayed, self.grid_displayed),
-            (self.add_pos_particle, self.add_neg_particle, self.delete_mode),
+            (self.add_pos_particle, self.add_neg_particle, self.delete_mode, self.add_sensor),
             self, bd=0, highlightthickness=0)
 
         # Default check settings
@@ -76,6 +76,12 @@ class Window(Tk):
         # Run window mainloop
         self.mainloop()
 
+    def add_sensor(self):
+        s = models.Particle(300, 300, 0)
+        self.system.add_particle(s)
+        self.refresh_particles()
+        self.click_mode = None
+
     def delete_mode(self):
         self.click_mode = "delete"
 
@@ -93,11 +99,13 @@ class Window(Tk):
         p = models.Particle(300, 300, 1e-9)
         self.system.add_particle(p)
         self.refresh_particles()
+        self.click_mode = None
 
     def add_neg_particle(self):
         p = models.Particle(300, 300, -1e-9)
         self.system.add_particle(p)
         self.refresh_particles()
+        self.click_mode = None
 
     def select_particle(self, event):
         particle = self.canvas.find_withtag(CURRENT)[0]
@@ -148,6 +156,16 @@ class Window(Tk):
                 self.canvas.create_line(0, row * grid_sep, self.config_width, row * grid_sep, fill="#9e9e9e", tags="gridline")
         else:
             self.canvas.delete("gridline")
+
+        # Display sensor arrow
+        self.canvas.delete("sensorline")
+        for particle in self.system.get_particles():
+            if particle.charge == 0:
+                f = self.system.get_field(particle.x, particle.y)
+                if f:
+                    f[0] /= 1000
+                    f[1] /= 1000
+                    self.canvas.create_line(particle.x, particle.y, particle.x + f[0], particle.y + f[1], fill="#0f0", tags="sensorline")
 
         # Raise particles
         self.canvas.tag_raise("particle")
@@ -200,8 +218,10 @@ class Window(Tk):
             # Indicate sign of charge with color
             if particle.charge < 0:
                 color = "red"
-            else:
+            elif particle.charge > 0:
                 color = "blue"
+            else:
+                color = "yellow"
 
             # Display particle
             p = particle.id = self.canvas.create_oval(particle.x - self.particle_rad, particle.y - self.particle_rad,
@@ -240,7 +260,8 @@ class InfoFrame(Frame):
         # Pair event handlers with buttons
         self.create_pro = Button(self, text="Add - Charge", command=cmds[0])
         self.create_ele = Button(self, text="Add + Charge", command=cmds[1])
-        self.delete_par = Button(self, text="Delete Particle", command=cmds[2])
+        self.delete_par = Button(self, text="Delete", command=cmds[2])
+        self.create_sen = Button(self, text="Add Sensor", command=cmds[3])
 
         # Pack widgets into frame grid
         self.x_label.grid(row=0, column=0)
@@ -254,6 +275,7 @@ class InfoFrame(Frame):
         self.create_pro.grid(row=7, column=0, columnspan=2)
         self.create_ele.grid(row=8, column=0, columnspan=2)
         self.delete_par.grid(row=9, column=0, columnspan=2)
+        self.create_sen.grid(row=10, column=0, columnspan=2)
 
         # Instantiate field to read
         self.field = field

@@ -36,6 +36,9 @@ class System:
 
         # Find net field at a position
         for particle in self._particles:
+            if particle.charge == 0:
+                continue
+
             # Get the position of the particle
             particle_pos = (particle.x, particle.y)
 
