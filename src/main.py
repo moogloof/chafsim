@@ -30,12 +30,18 @@ class Window(Tk):
         p2 = models.Particle(700, 300, -1e-9)
         self.system = models.System([p1, p2], 200)
 
+        # PhotoImage for canvas screen
+        self.volt_image = PhotoImage(width=self.config_width, height=self.config_height)
+
         # Instantiate widgets
         self.canvas = Canvas(self, width=self.config_width, height=self.config_height, bg="black", bd=0, highlightthickness=0)
         self.info_frame = InfoFrame(self.system,
             (self.direction_only, self.field_displayed, self.scale_displayed, self.grid_displayed),
-            (self.add_pos_particle, self.add_neg_particle, self.delete_mode, self.add_sensor),
+            (self.add_pos_particle, self.add_neg_particle, self.delete_mode, self.add_sensor, self.display_volt),
             self, bd=0, highlightthickness=0)
+
+        # Display PhotoImage for screen
+        self.canvas.create_image((self.config_width/2, self.config_height/2), image=self.volt_image, state=NORMAL)
 
         # Default check settings
         self.direction_only.set(0)
@@ -81,6 +87,29 @@ class Window(Tk):
 
         # Run window mainloop
         self.mainloop()
+
+    def display_volt(self, quality_sep=10):
+        pixel_data = []
+
+        for x in range(self.config_width//quality_sep):
+            for y in range(self.config_height//quality_sep):
+                # Return voltage at pos
+                v = self.system.get_voltage(x*quality_sep + (quality_sep / 2), y*quality_sep + (quality_sep / 2))
+                v = round(v)
+
+                pixel_data.append(v)
+
+        scaler = max(pixel_data) / 255
+        for x in range(self.config_width//quality_sep):
+            for y in range(self.config_height//quality_sep):
+                point_data = pixel_data[x*(self.config_height//quality_sep) + y]
+
+                if point_data:
+                    point_data //= scaler
+                    rgb = (round(point_data), 0, 0)
+
+                    self.volt_image.put("#{:02x}{:02x}{:02x}".format(*rgb),
+                        to=(x*quality_sep, y*quality_sep, (x + quality_sep)*quality_sep, (y + quality_sep)*quality_sep))
 
     def length_mode(self, event):
         self.length_mode_bool = True
@@ -288,6 +317,7 @@ class InfoFrame(Frame):
         self.create_ele = Button(self, text="Add + Charge", command=cmds[1])
         self.delete_par = Button(self, text="Delete", command=cmds[2])
         self.create_sen = Button(self, text="Add Sensor", command=cmds[3])
+        self.draw_volt = Button(self, text="Render Voltage", command=cmds[4])
 
         # Pack widgets into frame grid
         self.x_label.grid(row=0, column=0)
@@ -302,6 +332,7 @@ class InfoFrame(Frame):
         self.create_ele.grid(row=8, column=0, columnspan=2)
         self.delete_par.grid(row=9, column=0, columnspan=2)
         self.create_sen.grid(row=10, column=0, columnspan=2)
+        self.draw_volt.grid(row=11, column=0, columnspan=2)
 
         # Instantiate field to read
         self.field = field
