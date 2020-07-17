@@ -1,14 +1,6 @@
 # Charges and Fields simulator in python
 
-## Progress so far:
+## How to use
+Everything is pretty self explanatory. You can add negative and positive charges with the buttons and also add sensors. You can view the voltage and charge at your mouse location on the side. You can toggle certain features for displaying. In order to delete a charge or sensor, you must press the delete button and click on that charge or sensor. To cancel the delete, just click on another button.
 
-```
-So far I have added some models for the particles and the fields.
-The particle is like a struct, just holding the data.
-The system is where all the calculation are made.
-I am adding a function to calculate the electric field.
-I have also added an elementary GUI, where particles are displayed with a white dot.
-I have added one white dot as a test.
-Later on, I plan to make the dots movable.
-I also plan to extend the info frame to include data about the electric field at the cursor position and much more.
-```
+**NOTE:** *DUE TO THE FACT THAT EDITTING INDIVIDUAL PIXELS IN TKINTER IS EXTREMELY SLOW, I HAVE CHANGED THE SHOW VOLTAGE OPTION TO A BUTTON. THIS MEANS THAT THE VOLTAGE WILL NOT BE UPDATED AT EACH FRAME. PRESS THE RENDER VOLTAGE BUTTON TO CREATE A NEW RENDERING OF THE VOLTAGE FIELD. THE VOLTAGE IS ALSO RENDERED IN 10X10 BOXES TO SPEED UP THE PERFORMANCE.*
