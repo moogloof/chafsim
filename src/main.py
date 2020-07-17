@@ -140,8 +140,8 @@ class Window(Tk):
 
     def loop(self):
         # Get mouse pos
-        mousex = self.winfo_pointerx() - self.winfo_rootx() - self.particle_rad
-        mousey = self.winfo_pointery() - self.winfo_rooty() - self.particle_rad
+        mousex = self.winfo_pointerx() - self.winfo_rootx()
+        mousey = self.winfo_pointery() - self.winfo_rooty()
 
         # Move selected particle
         if self.selected_particle is not None:
@@ -151,7 +151,8 @@ class Window(Tk):
             # Get relative mouse position
 
             # Move particle to mouse
-            self.canvas.move(self.selected_particle, mousex - selected_particle_coords[0], mousey - selected_particle_coords[1])
+            self.canvas.move(self.selected_particle,
+                mousex - self.particle_rad - selected_particle_coords[0], mousey - self.particle_rad - selected_particle_coords[1])
 
         # Update particle coords
         for particle in self.system.get_particles():
@@ -180,8 +181,8 @@ class Window(Tk):
             if particle.charge == 0:
                 f = self.system.get_field(particle.x, particle.y)
                 if f:
-                    f[0] /= 1000
-                    f[1] /= 1000
+                    f[0] /= 250
+                    f[1] /= 250
                     self.canvas.create_line(particle.x, particle.y, particle.x + f[0], particle.y + f[1], fill="#0f0", tags="sensorline", arrow=LAST)
 
         # Display length line
@@ -227,7 +228,7 @@ class Window(Tk):
                     f[1] /= f_dist_factor
                 else:
                     # Resize arrows by a factor
-                    resize_factor = 1000
+                    resize_factor = 250
                     f[0] /= resize_factor
                     f[1] /= resize_factor
 
