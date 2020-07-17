@@ -219,7 +219,7 @@ class Window(Tk):
         if self.length_mode_bool and self.selected_particle is None:
             self.canvas.create_line(self.length_start[0], self.length_start[1], mousex, mousey, fill="#00d0ff", tags="lengthline")
             self.canvas.create_text((self.length_start[0] + mousex) / 2, (self.length_start[1] + mousey) / 2,
-                text=f"{round(self.system.distance(self.length_start, (mousex, mousey)) / self.system.conversion, 3)} meters",
+                text="{} meters".format(round(self.system.distance(self.length_start, (mousex, mousey)) / self.system.conversion, 3)),
                 fill="#00d0ff", tags="lengthline")
 
         # Raise particles
@@ -339,8 +339,8 @@ class InfoFrame(Frame):
 
     def update(self, mov):
         # Update mouse information of frame
-        self.x_label_var.set(f"X: {mov.x}")
-        self.y_label_var.set(f"Y: {mov.y}")
+        self.x_label_var.set("X: {}".format(mov.x))
+        self.y_label_var.set("Y: {}".format(mov.y))
 
         # Get field at mouse position
         f = self.field.get_field(mov.x, mov.y)
@@ -353,14 +353,14 @@ class InfoFrame(Frame):
             f = "NaN"
 
         # Update field information at mouse
-        self.field_label_var.set(f"Field: {f}")
+        self.field_label_var.set("Field: {}".format(f))
 
         # Return voltage at mouse position
         v = self.field.get_voltage(mov.x, mov.y)
         v = round(v)
 
         # Update voltage information at mouse
-        self.voltage_label_var.set(f"V: {v}")
+        self.voltage_label_var.set("V: {}".format(v))
 
 
 # Main program
