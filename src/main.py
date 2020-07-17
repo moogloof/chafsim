@@ -182,7 +182,7 @@ class Window(Tk):
                 if f:
                     f[0] /= 1000
                     f[1] /= 1000
-                    self.canvas.create_line(particle.x, particle.y, particle.x + f[0], particle.y + f[1], fill="#0f0", tags="sensorline")
+                    self.canvas.create_line(particle.x, particle.y, particle.x + f[0], particle.y + f[1], fill="#0f0", tags="sensorline", arrow=LAST)
 
         # Display length line
         self.canvas.delete("lengthline")
