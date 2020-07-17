@@ -54,6 +54,10 @@ class Window(Tk):
 
         # Cursor modes
         self.click_mode = None
+        self.length_mode_bool = False
+
+        # Select length coords
+        self.length_start = (0, 0)
 
         # Set widget bindings
         # Binded canvas mouse motion to information update
@@ -62,6 +66,8 @@ class Window(Tk):
         self.particle_bind()
         # Unselect movement select particle
         self.canvas.bind("<ButtonRelease-1>", self.unselect_particle)
+        # Binded canvas click to measuretape
+        self.canvas.bind("<Button-1>", self.length_mode)
 
         # Pack widgets into window grid
         self.canvas.grid(row=0, column=0)
@@ -75,6 +81,10 @@ class Window(Tk):
 
         # Run window mainloop
         self.mainloop()
+
+    def length_mode(self, event):
+        self.length_mode_bool = True
+        self.length_start = (event.x, event.y)
 
     def add_sensor(self):
         s = models.Particle(300, 300, 0)
@@ -123,15 +133,22 @@ class Window(Tk):
         if self.selected_particle is not None:
             self.selected_particle = None
 
+        self.length_mode_bool = False
+
+        # Reset mode
+        self.click_mode = None
+
     def loop(self):
+        # Get mouse pos
+        mousex = self.winfo_pointerx() - self.winfo_rootx() - self.particle_rad
+        mousey = self.winfo_pointery() - self.winfo_rooty() - self.particle_rad
+
         # Move selected particle
         if self.selected_particle is not None:
             # Get selected particle coords
             selected_particle_coords = self.canvas.coords(self.selected_particle)
 
             # Get relative mouse position
-            mousex = self.winfo_pointerx() - self.winfo_rootx() - self.particle_rad
-            mousey = self.winfo_pointery() - self.winfo_rooty() - self.particle_rad
 
             # Move particle to mouse
             self.canvas.move(self.selected_particle, mousex - selected_particle_coords[0], mousey - selected_particle_coords[1])
@@ -166,6 +183,14 @@ class Window(Tk):
                     f[0] /= 1000
                     f[1] /= 1000
                     self.canvas.create_line(particle.x, particle.y, particle.x + f[0], particle.y + f[1], fill="#0f0", tags="sensorline")
+
+        # Display length line
+        self.canvas.delete("lengthline")
+        if self.length_mode_bool and self.selected_particle is None:
+            self.canvas.create_line(self.length_start[0], self.length_start[1], mousex, mousey, fill="#00d0ff", tags="lengthline")
+            self.canvas.create_text((self.length_start[0] + mousex) / 2, (self.length_start[1] + mousey) / 2,
+                text=f"{round(self.system.distance(self.length_start, (mousex, mousey)) / self.system.conversion, 3)} meters",
+                fill="#00d0ff", tags="lengthline")
 
         # Raise particles
         self.canvas.tag_raise("particle")
